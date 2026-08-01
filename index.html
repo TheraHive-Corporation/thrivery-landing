@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Thrivery</title>
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: #f7fafc;
+      color: #2d3748;
+      margin: 0;
+      padding: 0;
+    }
+    .main-wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 20px;
+    }
+    .brand-container {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .brand-container img {
+      height: 75px;
+      width: auto;
+      display: inline-block;
+    }
+    .hero-container {
+      background: #ffffff;
+      padding: 60px 40px;
+      border-radius: 16px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    h1 {
+      color: #111111;
+      font-size: 2.5rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-top: 0;
+      margin-bottom: 25px;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      font-size: 1.3rem;
+      line-height: 1.6;
+      color: #4a5568;
+      max-width: 800px;
+      margin: 0 auto 40px auto;
+    }
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 8px 14px;
+      margin-bottom: 40px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #4a5568;
+    }
+    .badges .separator {
+      color: #cbd5e0;
+    }
+    @media (max-width: 600px) {
+      .badges .separator { display: none; }
+      .badges { gap: 10px; }
+    }
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+    .btn-hero-primary {
+      display: inline-block;
+      text-decoration: none;
+      background-color: #111111;
+      color: #ffffff;
+      padding: 18px 40px;
+      font-weight: 700;
+      border-radius: 8px;
+      font-size: 1.2rem;
+      transition: background 0.2s;
+    }
+    .btn-hero-primary:hover {
+      background-color: #2d3748;
+    }
+    .btn-hero-secondary {
+      display: inline-block;
+      text-decoration: none;
+      color: #2d3748;
+      background-color: #ffffff;
+      padding: 18px 40px;
+      font-weight: 700;
+      border-radius: 8px;
+      font-size: 1.2rem;
+      border: 2px solid #cbd5e0;
+      transition: all 0.2s;
+    }
+    .btn-hero-secondary:hover {
+      background-color: #f7fafc;
+      border-color: #2d3748;
+    }
+    .section-title {
+      font-size: 1.3rem;
+      color: #718096;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin: 60px 0 30px 0;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 80px;
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 30px 25px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+    }
+    .card h3 {
+      margin-top: 0;
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+    .card-explorers h3 { color: #2f855a; }
+    .card-students h3 { color: #b7791f; }
+    .card-grads h3 { color: #2c5282; }
+    .card-practitioners h3 { color: #44337a; }
+    .card p { line-height: 1.6; margin: 0; color: #4a5568; font-size: 1rem; }
+    #pricing {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 60px 40px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+      margin-bottom: 60px;
+    }
+    .pricing-header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    .pricing-header h2 {
+      font-size: 2.2rem;
+      color: #111111;
+      margin: 0 0 10px 0;
+    }
+    .pricing-header p {
+      color: #718096;
+      font-size: 1.2rem;
+    }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      align-items: stretch;
+    }
+    .price-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 40px 30px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .price-card.featured {
+      border: 2px solid #b7791f;
+      background-color: #fffdf5;
+    }
+    .badge-featured {
+      position: absolute;
+      top: -13px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #b7791f;
+      color: white;
+      padding: 5px 16px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+    .price-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .price-amount {
+      font-size: 3rem;
+      font-weight: 800;
+      color: #111111;
+      margin-bottom: 5px;
+    }
+    .price-period {
+      color: #718096;
+      font-size: 1rem;
+      margin-bottom: 25px;
+    }
+    .price-features {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 40px 0;
+      flex-grow: 1;
+    }
+    .price-features li {
+      margin-bottom: 15px;
+      font-size: 1rem;
+      color: #4a5568;
+      display: flex;
+      align-items: flex-start;
+      line-height: 1.4;
+    }
+    .price-features li.check::before {
+      content: "\2713";
+      color: #2f855a;
+      font-weight: bold;
+      margin-right: 12px;
+    }
+    .price-card.featured .price-features li.check::before {
+      color: #b7791f;
+    }
+    .price-features li.asterisk::before {
+      content: "*";
+      color: #a0aec0;
+      font-weight: bold;
+      margin-right: 15px;
+      margin-left: 4px;
+    }
+    .btn-checkout {
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      background: #111111;
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .btn-checkout:hover {
+      background: #2d3748;
+    }
+    .btn-checkout.btn-featured {
+      background: #b7791f;
+    }
+    .btn-checkout.btn-featured:hover {
+      background: #976212;
+    }
+    .btn-checkout.btn-plain {
+      background: transparent;
+      color: #2d3748;
+      border: 1px solid #cbd5e0;
+    }
+    .btn-checkout.btn-plain:hover {
+      background: #f7fafc;
+    }
+    .why-pay {
+      background: #fffdf5;
+      border: 1px solid #f6e05e;
+      border-radius: 16px;
+      padding: 40px 50px;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+    .why-pay-question {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #111111;
+      margin: 0 0 16px 0;
+    }
+    .why-pay p {
+      font-size: 1.05rem;
+      line-height: 1.75;
+      color: #4a5568;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    @media (max-width: 768px) {
+      .why-pay { padding: 30px 25px; }
+    }
+    .disclaimer {
+      color: #a0aec0;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+      font-style: italic;
+    }
+    @media (max-width: 1024px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      h1 { font-size: 2rem; }
+      .hero-actions { flex-direction: column; gap: 15px; }
+      .grid { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="main-wrapper">
+    <div class="brand-container">
+      <img src="https://cdn.prod.website-files.com/65442584e08beb457920f9ab/6a0f9eba8a2a5aef58a3f183_Thrivery%20Logo.png" alt="Thrivery Logo">
+    </div>
+    <div class="hero-container">
+      <h1>Dialectical Behavior Therapy (DBT) changes lives—but only if you actually practice the skills.</h1>
+      <p class="subtitle">
+        Welcome to Thrivery — a private community for people who practice DBT skills. Connect with others who understand the work, get support when it's hard, and build the kind of ongoing practice that makes DBT actually stick.
+      </p>
+      <div class="badges">
+        <span>🧠 Real-World Practice</span>
+        <span class="separator">|</span>
+        <span>🤝 Peer Accountability</span>
+        <span class="separator">|</span>
+        <span>🔒 100% Private</span>
+      </div>
+      <div class="hero-actions">
+        <a href="#pricing" class="btn-hero-primary">Join the Community</a>
+        <a href="https://thrivery.therahive.com" class="btn-hero-secondary">Enter the Hive</a>
+      </div>
+    </div>
+    <div class="section-title">Who Is This Space For?</div>
+    <div class="grid">
+      <div class="card card-explorers">
+        <h3>🔍 Explorers</h3>
+        <p>Self-studying DBT, exploring it for the first time, or coming from a program with another provider? This is a place to practice alongside people who understand the work — and to discover whether a structured program like TheraHive is the right next step for you.</p>
+      </div>
+      <div class="card card-students">
+        <h3>🐝 Active Students</h3>
+        <p>Currently in a TheraHive cohort or another DBT program? Use this space to practice skills between sessions, get support when the homework feels hard, and stay connected to people who are doing the same work.</p>
+      </div>
+      <div class="card card-grads">
+        <h3>🎓 Graduates</h3>
+        <p>Completed a DBT program and want to keep the skills alive? Stay connected to a community that takes the work seriously, get support when old patterns resurface, and build on everything you've already learned.</p>
+      </div>
+      <div class="card card-practitioners">
+        <h3>🩺 Practitioners</h3>
+        <p>A therapist or counsellor who works with DBT clients? Deepen your own practice alongside the people you support, stay connected to the lived experience of doing this work, and contribute your expertise to a community that takes DBT seriously.</p>
+      </div>
+    </div>
+    <div class="why-pay">
+      <p class="why-pay-question">☝️ Why pay for community when there are free DBT groups on Facebook and Reddit?</p>
+      <p>Free communities are open to everyone, which means commitment levels vary widely. Our small monthly fee (less than a cup of coffee) does two things: it ensures that everyone here is genuinely invested in the work, and it allows us to keep investing in a community experience that's worth showing up for.</p>
+    </div>
+    <div id="pricing">
+      <div class="pricing-header">
+        <h2>Choose Your Membership</h2>
+        <p>Find the membership that works for you.</p>
+      </div>
+      <div class="pricing-grid">
+        <div class="price-card">
+          <div class="price-title">Basic Monthly</div>
+          <div class="price-amount" style="font-size: 2rem;">One Month FREE Trial</div>
+          <div class="price-period">$5 a month</div>
+          <ul class="price-features">
+            <li class="check">Full community access</li>
+            <li class="check">Access to TheraHive free resources</li>
+            <li class="check">Peer support</li>
+          </ul>
+          <a href="YOUR_STRIPE_MONTHLY_LINK" class="btn-checkout">Get Started</a>
+        </div>
+        <div class="price-card featured">
+          <div class="badge-featured">Bonus Included</div>
+          <div class="price-title">Annual Pass</div>
+          <div class="price-amount">$60</div>
+          <div class="price-period">per year</div>
+          <ul class="price-features">
+            <li class="check"><strong>Everything in Basic Membership</strong></li>
+            <li class="check"><strong>Bonus:</strong> "Setting Intentions" minicourse from TheraHive.com ($25 value)</li>
+          </ul>
+          <a href="YOUR_STRIPE_ANNUAL_LINK" class="btn-checkout btn-featured">Join Annually</a>
+        </div>
+        <div class="price-card">
+          <div class="badge-featured" style="background-color: #2c5282;">Practitioners</div>
+          <div class="price-title">Licensed Practitioners</div>
+          <div class="price-amount">Free</div>
+          <div class="price-period">Complimentary community access*</div>
+          <ul class="price-features">
+            <li class="check">Learn and practice DBT skills</li>
+            <li class="check">Stay connected to the lived experience of your clients</li>
+            <li class="check">Access to TheraHive free resources</li>
+            <li class="asterisk">Subject to identity credential verification</li>
+          </ul>
+          <a href="YOUR_TYPEFORM_LINK" class="btn-checkout btn-plain">Apply For Free</a>
+        </div>
+      </div>
+    </div>
+    <p class="disclaimer">
+      Thrivery is a peer community for DBT skills practice and accountability. We are not a clinical service and do not provide therapy, medical advice, or crisis support.
+    </p>
+  </div>
+</body>
+</html>
