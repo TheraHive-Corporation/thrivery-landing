@@ -379,18 +379,16 @@
       </div>
       <div class="pricing-grid">
         <div class="price-card">
-  <div class="price-title">Basic Monthly</div>
-  <div class="price-amount">Free</div>
-  <div class="price-period">one-month trial, then $5/month</div>
-  <ul class="price-features">
-    <li class="check">Full community access</li>
-    <li class="check">Access to TheraHive free resources</li>
-    <li class="check">Peer support</li>
-  </ul>
-  <a href="YOUR_STRIPE_MONTHLY_LINK" class="btn-checkout">Get Started</a>
-</div>
-
-Just the price-amount and price-period lines change — everything else stays the same. To apply: open the file on GitHub, click the pencil/edit icon, find that block, swap those two lines, then commit.
+          <div class="price-title">Basic Monthly</div>
+          <div class="price-amount" style="font-size: 2rem;">One Month FREE Trial</div>
+          <div class="price-period">$5 a month</div>
+          <ul class="price-features">
+            <li class="check">Full community access</li>
+            <li class="check">Access to TheraHive free resources</li>
+            <li class="check">Peer support</li>
+          </ul>
+          <a href="YOUR_STRIPE_MONTHLY_LINK" class="btn-checkout">Get Started</a>
+        </div>
         <div class="price-card featured">
           <div class="badge-featured">Bonus Included</div>
           <div class="price-title">Annual Pass</div>
