@@ -399,5 +399,266 @@
       Thrivery is a peer community for DBT skills practice and accountability. We are not a clinical service and do not provide therapy, medical advice, or crisis support.
     </p>
   </div>
+  <!-- First-touch attribution capture. Copy of first-touch-capture.js from TheraHive-Corporation/therahive-claude
+       (plugins/therahive-core/skills/paid-advertising/references/). Keep it identical to the Webflow footer script:
+       it stores UTMs, referrer and the landing page in cookies shared across therahive.com subdomains, so the
+       waitlist form on www.therahive.com can attribute visitors who first arrived here. -->
+  <script>
+(function () {
+  var COOKIE_DAYS = 30;
+  var UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+  var CLICK_KEYS = ['gclid', 'ttclid', 'fbclid'];
+  var ALL_KEYS = UTM_KEYS.concat(CLICK_KEYS);
+  var REPLAY_KEYS = UTM_KEYS;
+  var CLICK_MAX_LEN = 512;
+
+  var PLACEHOLDER = /^(x+|y+|z+|n\/a|na|none|null|undefined|nil|unknown|-|_|0)$/i;
+
+  function isValid(v, maxLen) {
+    if (typeof v !== 'string') return false;
+    v = v.trim();
+    if (!v || v.length > (maxLen || 200)) return false;
+    if (PLACEHOLDER.test(v)) return false;
+    if (/^[\{\[].*[\}\]]$/.test(v)) return false;   // unreplaced macro, e.g. {campaign_id}
+    if (/^%7[BD]/i.test(v)) return false;           // encoded unreplaced macro
+    return true;
+  }
+
+  function maxLenFor(key) {
+    return CLICK_KEYS.indexOf(key) === -1 ? 200 : CLICK_MAX_LEN;
+  }
+
+  // Session fallback. Every stored value is also kept in this tab's
+  // sessionStorage, so a visitor whose cookies can't be written (blocked,
+  // cleared, or capped by the browser) keeps first touch across pages in the
+  // same tab, including the router's redirect to a booking page. Cookies stay
+  // the source of truth; the session copy is only read when a cookie is
+  // missing. If storage is blocked too, the in-memory copy still covers the
+  // current page view.
+  var SESSION_KEY = 'th_first_touch';
+  var session = {};
+  try { session = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}') || {}; } catch (e) { session = {}; }
+
+  function saveSession() {
+    try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch (e) {}
+  }
+
+  // Cookies are scoped to .therahive.com so first touch is shared across subdomains
+  // (www, join, and any other). Elsewhere (staging, previews) they stay host-only.
+  var COOKIE_DOMAIN = /(^|\.)therahive\.com$/i.test(window.location.hostname) ? '.therahive.com' : '';
+
+  function setCookie(name, value, days) {
+    session[name] = value;
+    saveSession();
+    var d = new Date();
+    d.setTime(d.getTime() + days * 86400000);
+    document.cookie = name + '=' + encodeURIComponent(value) +
+      '; expires=' + d.toUTCString() +
+      '; path=/; SameSite=Lax' +
+      (COOKIE_DOMAIN ? '; domain=' + COOKIE_DOMAIN : '') +
+      (window.location.protocol === 'https:' ? '; Secure' : '');
+  }
+
+  function getCookie(name) {
+    var m = document.cookie.match('(?:^|; )' + name.replace(/([.*+?^${}()|[\]\\])/g, '\\$1') + '=([^;]*)');
+    if (!m) return null;
+    try { return decodeURIComponent(m[1]); } catch (e) { return m[1]; }
+  }
+
+  function deleteCookie(name) {
+    if (Object.prototype.hasOwnProperty.call(session, name)) {
+      delete session[name];
+      saveSession();
+    }
+    var past = '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+    document.cookie = name + past;                                   // host-only copy
+    if (COOKIE_DOMAIN) document.cookie = name + past + '; domain=' + COOKIE_DOMAIN;
+  }
+
+  // The stored first-touch value: the cookie, else this tab's session copy.
+  function getStored(name) {
+    var v = getCookie(name);
+    if (v !== null) return v;
+    return Object.prototype.hasOwnProperty.call(session, name) ? session[name] : null;
+  }
+
+  // One-time move of this host's older host-only cookies to .therahive.com, so a
+  // visitor's first touch on www carries over to the other subdomains. Each host does it
+  // once, tracked by a host-only marker cookie. Expiry restarts at 30 days for the
+  // moved values. If a domain cookie of the same name already exists, the first value
+  // the browser returns is kept.
+  if (COOKIE_DOMAIN && getCookie('th_ck_dom') === null) {
+    UTM_KEYS.concat(CLICK_KEYS, ['referrer', 'attr']).forEach(function (key) {
+      var v = getCookie(key);
+      if (v === null) return;
+      document.cookie = key + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';   // host-only copy
+      setCookie(key, v, COOKIE_DAYS);
+    });
+    document.cookie = 'th_ck_dom=1; max-age=31536000; path=/; SameSite=Lax' +
+      (window.location.protocol === 'https:' ? '; Secure' : '');
+  }
+
+  var params = {};
+  try {
+    new URLSearchParams(window.location.search).forEach(function (value, key) {
+      params[key] = value;
+    });
+  } catch (e) {}
+
+  // Purge previously stored junk so it stops propagating to forms and links.
+  ALL_KEYS.forEach(function (key) {
+    var existing = getCookie(key);
+    if (existing !== null && !isValid(existing, maxLenFor(key))) deleteCookie(key);
+  });
+
+  // First touch wins, as a set. UTMs are stored only on the visit that brings a
+  // valid utm_source, and all together, so one lead's UTMs never mix values from
+  // two visits. Stale UTM cookies without a utm_source are cleared first.
+  // Click IDs below stay first-touch per parameter on purpose.
+  var hadUtmSource = !!getStored('utm_source');   // before this visit; read by the attr step below
+  if (!hadUtmSource && isValid(params.utm_source)) {
+    UTM_KEYS.forEach(function (key) {
+      if (isValid(params[key])) setCookie(key, params[key].trim(), COOKIE_DAYS);
+      else deleteCookie(key);
+    });
+  }
+
+  CLICK_KEYS.forEach(function (key) {
+    if (isValid(params[key], CLICK_MAX_LEN) && !getStored(key)) {
+      setCookie(key, params[key].trim(), COOKIE_DAYS);
+    }
+  });
+
+  // Legacy behaviour, Google only: Google Ads links carry no utm_content, so the
+  // gclid has historically been stored there. Keep that only when no real
+  // utm_content exists. Deliberately NOT extended to ttclid or fbclid, because
+  // TikTok and Meta links do populate utm_content.
+  if (isValid(params.gclid, CLICK_MAX_LEN) && getStored('gclid')) {
+    if (!isValid(params.utm_content) && !getStored('utm_content')) {
+      setCookie('utm_content', params.gclid.trim(), COOKIE_DAYS);
+    }
+  }
+
+  // First-touch external referrer, stored as a bare hostname so untagged traffic
+  // (organic search, AI referrals, direct) can be told apart instead of all
+  // collapsing into "unknown". Deliberately NOT in ALL_KEYS: it is never appended
+  // to links or the address bar, only read from the cookie by the Typeform patch
+  // below. Internal navigation never overwrites it.
+  if (!getStored('referrer')) {
+    var ref = document.referrer, refVal = 'direct';
+    if (ref) {
+      try {
+        var rh = new URL(ref).hostname.replace(/^www\./, '');
+        refVal = (rh && rh !== window.location.hostname.replace(/^www\./, '')) ? rh : null;
+      } catch (e) { refVal = null; }
+    }
+    if (refVal) setCookie('referrer', refVal.replace(/[,=]/g, '').slice(0, 100), COOKIE_DAYS);
+  }
+
+  // attr v1: the first-touch query string plus the landing page, atomically, as
+  // "v1." + base64url(JSON). The landing page (hostname lh and path lp) is stored even
+  // when the visit carries no parameters, so organic, direct and AI-referral leads
+  // keep the page they first arrived on.
+  // base64url has no ',' '=' or '%', so it survives data-tf-hidden and any encoding.
+  // Deliberately NOT in ALL_KEYS / REPLAY_KEYS and NOT passed through isValid().
+  var ATTR_MAX  = 800;   // encoded length cap
+  var VAL_MAX   = 256;   // per-parameter raw cap
+  var ATTR_DENY = /^(e|email|e_mail|mail|phone|tel|mobile|name|fname|lname|first_name|last_name|full_name|password|pass|pwd|token|auth|secret|key|session|sid|code|otp|ssn|dob)$/i;
+  var LOOKS_PII = /(^|[^A-Za-z0-9])[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}|\d{7,}/;
+
+  function b64url(s) {
+    var bytes = new TextEncoder().encode(s), bin = '';
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  function b64urlDecode(s) {
+    s = s.replace(/-/g, '+').replace(/_/g, '/');
+    while (s.length % 4) s += '=';
+    var bin = atob(s), bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  }
+
+  // True when the stored attr carries at least one query parameter. A landing-only
+  // attr (written on an untagged first visit) is replaced if a later visit brings
+  // parameters, so attr stays aligned with the UTM cookies and keeps click IDs such
+  // as gbraid and rdt_cid that only attr carries. An unreadable value counts as
+  // having parameters, so it is never overwritten. It is also kept when UTM cookies
+  // from an earlier visit already exist, so attr never describes a different visit
+  // than the UTM cookies do.
+  function attrHasParams(enc) {
+    try {
+      if (enc.indexOf('v1.') !== 0) return true;
+      var o = JSON.parse(b64urlDecode(enc.slice(3)));
+      return !!(o && o.q && Object.keys(o.q).length);
+    } catch (e) { return true; }
+  }
+
+  var storedAttr = getStored('attr');
+  if (!storedAttr || (!hadUtmSource && !attrHasParams(storedAttr))) {
+    try {
+      var q = {}, order = [];
+      Object.keys(params).forEach(function (k) {
+        var v = params[k];
+        if (!k || ATTR_DENY.test(k)) return;
+        if (typeof v !== 'string' || !v.trim()) return;
+        if (v.length > VAL_MAX) return;
+        if (LOOKS_PII.test(v)) return;
+        if (PLACEHOLDER.test(v.trim())) return;
+        if (/^[\{\[].*[\}\]]$/.test(v) || /^%7[BD]/i.test(v)) return;  // unreplaced macro
+        q[k] = v.trim();
+        order.push(k);
+      });
+
+      // Write when there are parameters, or when nothing is stored yet (landing page only).
+      if (order.length || !storedAttr) {
+        var lpath = window.location.pathname.slice(0, 128);
+        var payload = {
+          v: 1,
+          t: Math.floor(Date.now() / 1000),
+          lh: window.location.hostname.replace(/^www\./, '').slice(0, 64),
+          lp: LOOKS_PII.test(lpath) ? '' : lpath,
+          rf: getStored('referrer') || null,
+          q: q
+        };
+        // Truncate deterministically: drop the last-seen keys until it fits.
+        var enc = 'v1.' + b64url(JSON.stringify(payload));
+        while (enc.length > ATTR_MAX && order.length > 1) {
+          delete payload.q[order.pop()];
+          enc = 'v1.' + b64url(JSON.stringify(payload));
+        }
+        if (enc.length <= ATTR_MAX) setCookie('attr', enc, COOKIE_DAYS);
+      }
+    } catch (e) {}
+  }
+
+  function appendUTMParameters(href) {
+    var url;
+    try { url = new URL(href, window.location.href); } catch (e) { return href; }
+    REPLAY_KEYS.forEach(function (key) {
+      var v = getStored(key);
+      if (v && isValid(v, maxLenFor(key)) && !url.searchParams.has(key)) url.searchParams.set(key, v);
+    });
+    return url.toString();
+  }
+
+  // Preserve the previously global helpers for any page-level code that calls them.
+  window.appendUTMParameters = appendUTMParameters;
+  window.getCookie = getCookie;
+  // Read by the Typeform embed patch when a cookie is missing.
+  window.thFirstTouch = getStored;
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var links = document.querySelectorAll("a[href^='/'], a[href^='" + window.location.origin + "']");
+    for (var i = 0; i < links.length; i++) {
+      links[i].href = appendUTMParameters(links[i].href);
+    }
+    var current = window.location.href;
+    var updated = appendUTMParameters(current);
+    if (updated !== current) window.history.replaceState({}, '', updated);
+  });
+})();
+</script>
 </body>
 </html>
